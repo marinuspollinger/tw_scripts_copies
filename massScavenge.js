@@ -1013,12 +1013,14 @@ function readyToSend() {
         troopTypeEnabled[sendOrder[i]] = $(`:checkbox#${sendOrder[i]}`).is(":checked");
     }
     for (var i = 0; i < sendOrder.length; i++) {
-        keepHome[sendOrder[i]] = $(`#${sendOrder[i]}Backup`).val();
+        keepHome[sendOrder[i]] = parseInt($(`#${sendOrder[i]}Backup`).val()) || 0;
     }
     for (var i = 0; i < sendOrder.length; i++) {
-        maxUnits[sendOrder[i]] = $(`#${sendOrder[i]}MaxUnits`).val();
+        maxUnits[sendOrder[i]] = parseInt($(`#${sendOrder[i]}MaxUnits`).val()) || 0;
     }
     console.log(troopTypeEnabled);
+    console.log("keepHome:", keepHome);
+    console.log("maxUnits:", maxUnits);
     enabledCategories.push($("#category1").is(":checked"));
     enabledCategories.push($("#category2").is(":checked"));
     enabledCategories.push($("#category3").is(":checked"));
@@ -1125,8 +1127,9 @@ function calculateHaulCategories(data) {
                 if (data.unit_counts_home[key] - keepHome[key] > 0) {
                     var availableTroops = data.unit_counts_home[key] - keepHome[key];
                     // Apply maxUnits limit if set (0 means no limit)
-                    if (maxUnits[key] > 0 && availableTroops > maxUnits[key]) {
-                        troopsAllowed[key] = maxUnits[key];
+                    var maxLimit = parseInt(maxUnits[key]) || 0;
+                    if (maxLimit > 0 && availableTroops > maxLimit) {
+                        troopsAllowed[key] = maxLimit;
                     } else {
                         troopsAllowed[key] = availableTroops;
                     }
