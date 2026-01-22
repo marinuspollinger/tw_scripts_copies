@@ -5,7 +5,7 @@ serverTime = serverTimeTemp.match(/^([0][1-9]|[12][0-9]|3[01])[\/\-]([0][1-9]|1[
 serverDate = Date.parse(serverTime[3] + "/" + serverTime[2] + "/" + serverTime[1] + serverTime[4]);
 var is_mobile = !!navigator.userAgent.match(/iphone|android|blackberry/ig) || false;
 var scavengeInfo;
-var tempElementSelection = "";
+var tempElementSelection="";
 
 //relocate to mass scavenging page
 if (window.location.href.indexOf('screen=place&mode=scavenge_mass') < 0) {
@@ -143,26 +143,6 @@ if (localStorage.getItem("keepHome") == null) {
 else {
     console.log("Grabbing which units to keep home");
     var keepHome = JSON.parse(localStorage.getItem("keepHome"));
-}
-
-// maxUnits
-
-if (localStorage.getItem("maxUnits") == null) {
-    console.log("No max units set, creating")
-    var maxUnits = {
-        "spear": 0,
-        "sword": 0,
-        "axe": 0,
-        "archer": 0,
-        "light": 0,
-        "marcher": 0,
-        "heavy": 0
-    }
-    localStorage.setItem("maxUnits", JSON.stringify(maxUnits));
-}
-else {
-    console.log("Grabbing max units setting");
-    var maxUnits = JSON.parse(localStorage.getItem("maxUnits"));
 }
 
 // categories enabled
@@ -955,12 +935,6 @@ for (var i = 0; i < sendOrder.length; i++) {
         <tr>
             <td align="center" style="background-color:${backgroundColor};padding: 5px;"><input type="text" ID="${sendOrder[i]}Backup" name="${sendOrder[i]}" value="${keepHome[sendOrder[i]]}" size="5"></td>
         </tr>
-        <tr>
-            <td style="text-align:center; width:auto; background-color:#202225;padding: 5px;"><font color="#ffffdf">Max units</font></td>
-        </tr>
-        <tr>
-            <td align="center" style="background-color:${backgroundColor};padding: 5px;"><input type="text" ID="${sendOrder[i]}MaxUnits" name="${sendOrder[i]}" value="${maxUnits[sendOrder[i]]}" size="5"></td>
-        </tr>
         </tbody>  
     </table>
 </td>`);
@@ -1015,9 +989,6 @@ function readyToSend() {
     for (var i = 0; i < sendOrder.length; i++) {
         keepHome[sendOrder[i]] = $(`#${sendOrder[i]}Backup`).val();
     }
-    for (var i = 0; i < sendOrder.length; i++) {
-        maxUnits[sendOrder[i]] = $(`#${sendOrder[i]}MaxUnits`).val();
-    }
     console.log(troopTypeEnabled);
     enabledCategories.push($("#category1").is(":checked"));
     enabledCategories.push($("#category2").is(":checked"));
@@ -1063,7 +1034,6 @@ function readyToSend() {
     console.log("Runtimes: Off: " + time.off + " Def: " + time.def);
     localStorage.setItem("troopTypeEnabled", JSON.stringify(troopTypeEnabled));
     localStorage.setItem("keepHome", JSON.stringify(keepHome));
-    localStorage.setItem("maxUnits", JSON.stringify(maxUnits));
     localStorage.setItem("categoryEnabled", JSON.stringify(enabledCategories));
     localStorage.setItem("prioritiseHighCat", JSON.stringify(prioritiseHighCat));
     localStorage.setItem("sendOrder", JSON.stringify(sendOrder));
@@ -1096,20 +1066,20 @@ function sendGroup(groupNr, premiumEnabled) {
     //Send one group(one page worth of scavenging)
     $(':button[id^="sendMass"]').prop('disabled', true)
     $(':button[id^="sendMassPremium"]').prop('disabled', true)
-    TribalWars.post('scavenge_api',
-        { ajaxaction: 'send_squads' },
-        { "squad_requests": tempSquads }, function () {
-            UI.SuccessMessage("Group sent successfully");
-        },
+    TribalWars.post('scavenge_api', 
+    { ajaxaction: 'send_squads' }, 
+    { "squad_requests": tempSquads }, function () {
+        UI.SuccessMessage("Group sent successfully");
+    },
         !1
     );
 
     //once group is sent, remove the row from the table
-    setTimeout(function () {
-        $(`#sendRow${groupNr}`).remove();
-        $(':button[id^="sendMass"]').prop('disabled', false);
-        $(':button[id^="sendMassPremium"]').prop('disabled', false);
-        $("#sendMass")[0].focus();
+    setTimeout(function () { 
+        $(`#sendRow${groupNr}`).remove(); 
+        $(':button[id^="sendMass"]').prop('disabled', false); 
+        $(':button[id^="sendMassPremium"]').prop('disabled', false); 
+        $("#sendMass")[0].focus(); 
     }, 200);
 }
 
@@ -1123,13 +1093,7 @@ function calculateHaulCategories(data) {
         for (key in troopTypeEnabled) {
             if (troopTypeEnabled[key] == true) {
                 if (data.unit_counts_home[key] - keepHome[key] > 0) {
-                    var availableTroops = data.unit_counts_home[key] - keepHome[key];
-                    // Apply maxUnits limit if set (0 means no limit)
-                    if (maxUnits[key] > 0 && availableTroops > maxUnits[key]) {
-                        troopsAllowed[key] = maxUnits[key];
-                    } else {
-                        troopsAllowed[key] = availableTroops;
-                    }
+                    troopsAllowed[key] = data.unit_counts_home[key] - keepHome[key];
                 }
                 else {
                     troopsAllowed[key] = 0;
@@ -1330,9 +1294,6 @@ function calculateUnitsPerVillage(troopsAllowed) {
     return unitsReadyForSend;
 }
 
-// Make readyToSend globally accessible
-window.readyToSend = readyToSend;
-
 function resetSettings() {
     localStorage.removeItem("troopTypeEnabled");
     localStorage.removeItem("categoryEnabled");
@@ -1340,13 +1301,9 @@ function resetSettings() {
     localStorage.removeItem("sendOrder");
     localStorage.removeItem("runTimes");
     localStorage.removeItem("keepHome");
-    localStorage.removeItem("maxUnits");
     UI.BanneredRewardMessage("Settings reset");
     window.location.reload();
 }
-
-// Make resetSettings globally accessible
-window.resetSettings = resetSettings;
 
 function closeWindow(title) {
     $("#" + title).remove();
