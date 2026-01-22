@@ -1113,7 +1113,8 @@ function sendGroup(groupNr, premiumEnabled) {
     }, 200);
 }
 
-
+// Make sendGroup globally accessible
+window.sendGroup = sendGroup;
 
 function calculateHaulCategories(data) {
     //check if village has rally point
@@ -1352,9 +1353,15 @@ function closeWindow(title) {
     $("#" + title).remove();
 }
 
+// Make closeWindow globally accessible
+window.closeWindow = closeWindow;
+
 function settings() {
     alert("coming soon!");
 }
+
+// Make settings globally accessible
+window.settings = settings;
 
 function zeroPadded(val) {
     if (val >= 10)
